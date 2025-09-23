@@ -20,7 +20,7 @@ export class AuthService {
       }
 
       if (email !== user.email || password !== user.password) return null;
-      return new User(email, password, user.name);
+      return new User(user.id, email, user.name);
     } catch (e) {
       console.error(
         `An error occured during an user authentication (email: ${email})`
@@ -30,7 +30,6 @@ export class AuthService {
   }
 
   login(user: User): LoginResponse {
-    const payload = { email: user.email };
-    return new LoginResponse(this.jwtService.sign(payload), user);
+    return new LoginResponse(this.jwtService.sign(user.toJson()), user);
   }
 }

@@ -25,10 +25,4 @@ export class AppController {
     if (!user) throw new UnauthorizedException("Invalid credentials");
     else return this.authService.login(user);
   }
-
-  @UseGuards(AuthGuard("jwt"))
-  @Get("todos")
-  getTodos(): Promise<Todo[]> {
-    return this.appService.getAllTodo();
-  }
 }

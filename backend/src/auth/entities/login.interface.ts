@@ -1,12 +1,20 @@
 export class User {
   email!: string;
-  password!: string;
   name!: string;
+  id!: number;
 
-  constructor(email: string, password: string, name: string) {
+  constructor(id: number, email: string, name: string) {
     this.email = email;
-    this.password = password;
     this.name = name;
+    this.id = id;
+  }
+
+  toJson() {
+    return {
+      email: this.email,
+      name: this.name,
+      id: this.id,
+    };
   }
 }
 
@@ -14,6 +22,7 @@ export class LoginPayload {
   email!: string;
   password!: string;
   name!: string;
+  id!: number;
 }
 
 export class LoginResponse {
