@@ -141,7 +141,7 @@ const handleLogin = async (): Promise<void> => {
     const userData = {
       id: "1",
       email: loginForm.email,
-      name: "John Doe",
+      name: "Yohann",
     };
 
     localStorage.setItem("isAuthenticated", "true");
