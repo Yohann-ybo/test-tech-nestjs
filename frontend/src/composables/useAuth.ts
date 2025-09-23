@@ -1,28 +1,48 @@
 import { ref, computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { navigateToLogin, navigateToHome } from "../router";
-import type { User, AuthState } from "../types/auth";
+import {
+  type User,
+  type AuthState,
+  type LoginPayload,
+  STORAGE_KEYS,
+} from "../types/auth";
+import { authService } from "@/services";
 
 const authState = reactive<AuthState>({
   isAuthenticated: false,
   user: null,
+  token: null,
 });
 
 const isLoading = ref<boolean>(false);
 const error = ref<string>("");
 
-const STORAGE_KEYS = {
-  AUTH: "isAuthenticated",
-  USER: "userData",
-  TOKEN: "authToken",
-  REFRESH_TOKEN: "refreshToken",
-} as const;
+export function initializeAuth() {
+  try {
+    const storedAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
+    const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+
+    if (storedAuth === "true" && storedUser && storedToken) {
+      authState.isAuthenticated = true;
+      authState.user = JSON.parse(storedUser);
+      authState.token = storedToken;
+    }
+  } catch (err) {
+    console.error("Error initializing auth state:", err);
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      localStorage.removeItem(key);
+    });
+  }
+}
 
 export function useAuth() {
   const router = useRouter();
 
   const isAuthenticated = computed(() => authState.isAuthenticated);
   const user = computed(() => authState.user);
+  const token = computed(() => authState.token);
   const isLoggedIn = computed(
     () => authState.isAuthenticated && authState.user !== null
   );
@@ -32,23 +52,25 @@ export function useAuth() {
       isLoading.value = true;
       error.value = "";
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (!email || !password) {
         throw new Error("Email et mot de passe requis");
       }
 
+      const loginPayload: LoginPayload = { email, password };
+      const response = await authService.login(loginPayload);
+
       const userData: User = {
-        id: Date.now().toString(),
-        email: email,
-        name: getUserNameFromEmail(email),
+        email: response.user.email,
+        name: response.user.name || getUserNameFromEmail(response.user.email),
       };
 
       localStorage.setItem(STORAGE_KEYS.AUTH, "true");
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.access_token);
 
       authState.isAuthenticated = true;
       authState.user = userData;
+      authState.token = response.access_token;
 
       const route = router.currentRoute.value;
       const redirectPath = route.query.redirect as string;
@@ -59,8 +81,7 @@ export function useAuth() {
         await navigateToHome();
       }
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Échec de la connexion";
+      const errorMessage = extractErrorMessage(err);
       error.value = errorMessage;
       throw new Error(errorMessage);
     } finally {
@@ -72,16 +93,13 @@ export function useAuth() {
     try {
       isLoading.value = true;
 
-      clearStorage();
       clearAuthState();
 
       await navigateToLogin();
     } catch (err) {
       console.error("Logout error:", err);
-      // Force clear even if navigation fails
       clearStorage();
       clearAuthState();
-      // Fallback navigation
       window.location.href = "/login";
     } finally {
       isLoading.value = false;
@@ -91,6 +109,7 @@ export function useAuth() {
   const clearAuthState = (): void => {
     authState.isAuthenticated = false;
     authState.user = null;
+    authState.token = null;
     error.value = "";
   };
 
@@ -102,21 +121,38 @@ export function useAuth() {
 
   const getUserNameFromEmail = (email: string): string => {
     const username = email.split("@")[0];
-    if (!username) return "Default";
+    if (!username) return "User";
     return username.charAt(0).toUpperCase() + username.slice(1);
   };
 
+  const extractErrorMessage = (err: unknown): string => {
+    if (err instanceof Error) {
+      if (
+        err.message.includes("401") ||
+        err.message.includes("Unauthorized") ||
+        err.message.includes("Invalid credentials")
+      ) {
+        return "Email ou mot de passe incorrect";
+      }
+      return err.message;
+    }
+    return "Une erreur inattendue s'est produite";
+  };
+
+  const checkAuthStatus = (): boolean => {
+    return !!(authState.token && authState.isAuthenticated);
+  };
+
   return {
-    // State
     isAuthenticated,
     user,
+    token,
     isLoggedIn,
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
-
-    // Methods
     login,
     logout,
     clearStorage,
+    checkAuthStatus,
   };
 }

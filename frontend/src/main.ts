@@ -3,6 +3,11 @@ import "./style.css";
 import App from "./App.vue";
 import router from "./router";
 
+import { initializeAuth } from "@/composables/useAuth";
+
+// Initialize auth state from localStorage before app starts
+initializeAuth();
+
 // Create Vue app
 const app = createApp(App);
 
@@ -14,9 +19,6 @@ app.config.errorHandler = (err, instance, info) => {
   console.error("Global error:", err);
   console.error("Component instance:", instance);
   console.error("Error info:", info);
-
-  // Here you could send error to monitoring service
-  // Example: Sentry.captureException(err);
 };
 
 // Global warning handler
