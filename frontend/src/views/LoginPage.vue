@@ -5,65 +5,43 @@
     <div class="max-w-md w-full space-y-8">
       <div class="bg-white shadow-xl rounded-lg p-8">
         <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-          <p class="text-gray-600">Please sign in to your account</p>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">Bienvenue</h2>
+          <p class="text-gray-600">Veuillez vous connecter à votre compte</p>
         </div>
 
         <form class="space-y-6" @submit.prevent="handleLogin">
-          <div>
-            <label
-              for="email"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Email Address
-            </label>
-            <input
-              id="email"
-              v-model="loginForm.email"
-              type="email"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
-              placeholder="you@example.com"
-            />
-          </div>
+          <BaseInput
+            id="email"
+            v-model="loginForm.email"
+            label="Adresse Email"
+            type="email"
+            :maxlength="EMAIL_MAX_LENGTH"
+            :error="errors.email"
+            placeholder="you@example.com"
+            required
+          />
 
-          <div>
-            <label
-              for="password"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              v-model="loginForm.password"
-              type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
-              placeholder="••••••••"
-            />
-          </div>
+          <BaseInput
+            id="password"
+            v-model="loginForm.password"
+            label="Mot de passe"
+            type="password"
+            :maxlength="PASSWORD_MAX_LENGTH"
+            :error="errors.password"
+            placeholder="••••••••"
+            required
+          />
 
           <div
-            v-if="errorMessage"
+            v-if="globalError"
             class="bg-red-50 border border-red-200 rounded-md p-4"
           >
             <div class="flex">
               <div class="flex-shrink-0">
-                <svg
-                  class="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <BaseIcon name="error" size="md" class="text-red-400" />
               </div>
               <div class="ml-3">
-                <p class="text-sm text-red-800">{{ errorMessage }}</p>
+                <p class="text-sm text-red-800">{{ globalError }}</p>
               </div>
             </div>
           </div>
@@ -72,30 +50,15 @@
             <button
               type="submit"
               :disabled="isLoading"
-              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              :class="submitButtonClasses"
             >
-              <svg
+              <BaseIcon
                 v-if="isLoading"
-                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              {{ isLoading ? "Signing in..." : "Sign in" }}
+                name="spinner"
+                size="md"
+                class="animate-spin -ml-1 mr-3"
+              />
+              {{ submitButtonText }}
             </button>
           </div>
         </form>
@@ -105,54 +68,76 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { useAuth } from "@/composables/useAuth";
+import { BUTTON_CLASSES } from "@/constants/styles";
+import {
+  AUTH_VALIDATION_LIMITS,
+  AuthValidator,
+} from "@/helpers/authValidation";
+import type { LoginForm, LoginFormErrors } from "@/types/auth";
+import { reactive, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
-
-export interface LoginForm {
-  email: string;
-  password: string;
-}
+import BaseInput from "@/components/common/BaseInput.vue";
+import BaseIcon from "@/components/common/BaseIcon.vue";
 
 const router = useRouter();
+const { login, isLoading, error: authError, isAuthenticated } = useAuth();
+
+const { EMAIL_MAX_LENGTH, PASSWORD_MAX_LENGTH } = AUTH_VALIDATION_LIMITS;
 
 const loginForm = reactive<LoginForm>({
   email: "",
   password: "",
 });
 
-const isLoading = ref<boolean>(false);
-const errorMessage = ref<string>("");
+const errors = reactive<LoginFormErrors>({
+  email: "",
+  password: "",
+});
+
+const globalError = computed(() => authError.value);
+
+const submitButtonText = computed(() => {
+  return isLoading.value ? "Connexion..." : "Se connecter";
+});
+
+const submitButtonClasses = computed(() => {
+  const baseClasses = BUTTON_CLASSES.PRIMARY;
+  const disabledClasses = isLoading.value ? BUTTON_CLASSES.DISABLED : "";
+  return `${baseClasses} ${disabledClasses}`;
+});
+
+watch(
+  () => loginForm.email,
+  (newEmail) => {
+    errors.email = AuthValidator.validateEmail(newEmail);
+  }
+);
+
+watch(
+  () => loginForm.password,
+  (newPassword) => {
+    errors.password = AuthValidator.validatePassword(newPassword);
+  }
+);
 
 const handleLogin = async (): Promise<void> => {
+  const formErrors = AuthValidator.validateLoginForm(loginForm);
+
+  if (AuthValidator.hasErrors(formErrors)) {
+    return;
+  }
+
   try {
-    isLoading.value = true;
-    errorMessage.value = "";
-
-    // Basic validation
-    if (!loginForm.email || !loginForm.password) {
-      errorMessage.value = "Please fill in all fields";
-      return;
-    }
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock authentication - replace with real authentication
-    const userData = {
-      id: "1",
-      email: loginForm.email,
-      name: "Yohann",
-    };
-
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userData", JSON.stringify(userData));
-
-    await router.push("/home");
+    await login(loginForm.email, loginForm.password);
   } catch (error) {
-    errorMessage.value = "Login failed. Please try again.";
-    console.error("Login error:", error);
-  } finally {
-    isLoading.value = false;
+    console.error("Login failed:", error);
   }
 };
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    router.push("/home");
+  }
+});
 </script>

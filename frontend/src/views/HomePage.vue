@@ -1,338 +1,27 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-4">
-            <div class="flex-shrink-0">
-              <div
-                class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center"
-              >
-                <svg
-                  class="h-6 w-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
-              <p class="text-sm text-gray-500">
-                Welcome{{ user?.name ? `, ${user.name}` : "" }}!
-              </p>
-            </div>
-          </div>
-
-          <div class="flex items-center space-x-4">
-            <div class="hidden sm:block text-right">
-              <p class="text-sm font-medium text-gray-900">
-                {{ user?.name || "User" }}
-              </p>
-              <p class="text-xs text-gray-500">{{ user?.email }}</p>
-            </div>
-
-            <div class="relative">
-              <div
-                class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center"
-              >
-                <span class="text-sm font-medium text-gray-700">
-                  {{ user?.name?.charAt(0).toUpperCase() || "U" }}
-                </span>
-              </div>
-            </div>
-
-            <button
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
-              @click="logout"
-            >
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <AppHeader :user="user" @logout="handleLogout" />
 
     <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div class="bg-white shadow-lg rounded-lg border border-gray-200">
-        <div
-          class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
-        >
-          <div>
-            <h3 class="text-lg font-medium text-gray-900">
-              Ma Liste de Tâches
-            </h3>
-            <p class="text-sm text-gray-500">
-              {{ todos.length }} tâche(s) au total
-            </p>
-          </div>
-          <button
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-            @click="showAddForm = !showAddForm"
-          >
-            <svg
-              class="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            {{ showAddForm ? "Annuler" : "Nouvelle Tâche" }}
-          </button>
-        </div>
-
-        <div
-          v-if="showAddForm"
-          class="px-6 py-4 bg-gray-50 border-b border-gray-200"
-        >
-          <form class="space-y-4" @submit.prevent="addTodo">
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label
-                  for="title"
-                  class="block text-sm font-medium text-gray-700"
-                >
-                  Titre de la tâche
-                </label>
-                <span class="text-xs text-gray-500">
-                  {{ newTodo.title.length }}/50
-                </span>
-              </div>
-              <input
-                id="title"
-                v-model="newTodo.title"
-                type="text"
-                maxlength="50"
-                required
-                :class="[
-                  'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
-                  titleError
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
-                ]"
-                placeholder="Entrez le titre de la tâche"
-              />
-              <div v-if="titleError" class="mt-1 text-sm text-red-600">
-                {{ titleError }}
-              </div>
-            </div>
-
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label
-                  for="content"
-                  class="block text-sm font-medium text-gray-700"
-                >
-                  Description
-                </label>
-                <span class="text-xs text-gray-500">
-                  {{ newTodo.content.length }}/256
-                </span>
-              </div>
-              <textarea
-                id="content"
-                v-model="newTodo.content"
-                maxlength="256"
-                rows="3"
-                :class="[
-                  'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
-                  contentError
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
-                ]"
-                placeholder="Décrivez la tâche..."
-              />
-              <div v-if="contentError" class="mt-1 text-sm text-red-600">
-                {{ contentError }}
-              </div>
-            </div>
-
-            <div>
-              <label
-                for="priority"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Niveau de priorité
-              </label>
-              <select
-                id="priority"
-                v-model="newTodo.priority"
-                :class="[
-                  'w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
-                  priorityError
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
-                ]"
-              >
-                <option value="Bas">Bas</option>
-                <option value="Moyen">Moyen</option>
-                <option value="Haut">Haut</option>
-              </select>
-              <div v-if="priorityError" class="mt-1 text-sm text-red-600">
-                {{ priorityError }}
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-3">
-              <button
-                type="button"
-                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-                @click="resetForm"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-              >
-                Ajouter la tâche
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="divide-y divide-gray-200">
-          <div v-if="todos.length === 0" class="p-6 text-center">
-            <svg
-              class="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune tâche</h3>
-            <p class="mt-1 text-sm text-gray-500">
-              Commencez par ajouter votre première tâche.
-            </p>
-          </div>
-
-          <div
-            v-for="todo in sortedTodos"
-            :key="todo.id"
-            class="p-6 hover:bg-gray-50 transition duration-150 ease-in-out"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    :checked="todo.completed"
-                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    @change="toggleTodo(todo.id)"
-                  />
-                  <h4
-                    class="text-sm font-medium text-gray-900"
-                    :class="{ 'line-through text-gray-500': todo.completed }"
-                  >
-                    {{ todo.title }}
-                  </h4>
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    :class="getPriorityClasses(todo.priority)"
-                  >
-                    {{ todo.priority }}
-                  </span>
-                </div>
-                <p
-                  v-if="todo.content"
-                  class="mt-2 text-sm text-gray-600"
-                  :class="{ 'line-through text-gray-400': todo.completed }"
-                >
-                  {{ todo.content }}
-                </p>
-                <p class="mt-2 text-xs text-gray-500">
-                  Créé le {{ formatDate(todo.createdAt) }}
-                </p>
-              </div>
-              <button
-                class="ml-4 text-red-400 hover:text-red-600 transition duration-150 ease-in-out"
-                @click="deleteTodo(todo.id)"
-              >
-                <svg
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TodoList
+        :todos="todos"
+        @add="handleAddTodo"
+        @toggle="handleToggleTodo"
+        @delete="handleDeleteTodo"
+      />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import AppHeader from "../components/layout/AppHeader.vue";
+import TodoList from "../components/todo/TodoList.vue";
+import { useAuth } from "../composables/useAuth";
+import type { Todo, NewTodo } from "../types/todo";
 
-type Priority = "Bas" | "Moyen" | "Haut";
+const { user, logout, requireAuth, initializeAuth } = useAuth();
 
-interface Todo {
-  id: number;
-  title: string;
-  content: string;
-  priority: Priority;
-  completed: boolean;
-  createdAt: Date;
-}
-
-interface NewTodo {
-  title: string;
-  content: string;
-  priority: Priority;
-}
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
-
-const router = useRouter();
-
-const user = ref<User | null>(null);
-const showAddForm = ref<boolean>(false);
 const todos = ref<Todo[]>([
   {
     id: 1,
@@ -360,177 +49,39 @@ const todos = ref<Todo[]>([
   },
 ]);
 
-const newTodo = ref<NewTodo>({
-  title: "",
-  content: "",
-  priority: "Moyen",
-});
-
-const titleError = ref<string>("");
-const contentError = ref<string>("");
-const priorityError = ref<string>("");
-
-const allowedPriorities: Priority[] = ["Bas", "Moyen", "Haut"];
-
-const sortedTodos = computed(() => {
-  const priorityOrder = { Haut: 3, Moyen: 2, Bas: 1 };
-  return [...todos.value].sort((a, b) => {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    return priorityOrder[b.priority] - priorityOrder[a.priority];
-  });
-});
-
-watch(
-  () => newTodo.value.title,
-  (newTitle) => {
-    validateTitle(newTitle);
-  }
-);
-
-watch(
-  () => newTodo.value.content,
-  (newContent) => {
-    validateContent(newContent);
-  }
-);
-
-watch(
-  () => newTodo.value.priority,
-  (newPriority) => {
-    validatePriority(newPriority);
-  }
-);
-
-const validateTitle = (title: string): boolean => {
-  titleError.value = "";
-
-  if (!title.trim()) {
-    titleError.value = "Le titre est requis";
-    return false;
-  }
-
-  if (title.length > 50) {
-    titleError.value = "Le titre ne peut pas dépasser 50 caractères";
-    return false;
-  }
-
-  return true;
-};
-
-const validateContent = (content: string): boolean => {
-  contentError.value = "";
-
-  if (content.length > 256) {
-    contentError.value = "La description ne peut pas dépasser 256 caractères";
-    return false;
-  }
-
-  return true;
-};
-
-const validatePriority = (priority: Priority): boolean => {
-  priorityError.value = "";
-
-  if (!allowedPriorities.includes(priority)) {
-    priorityError.value = "La priorité doit être 'Bas', 'Moyen' ou 'Haut'";
-    return false;
-  }
-
-  return true;
-};
-
-const validateForm = (): boolean => {
-  const isTitleValid = validateTitle(newTodo.value.title);
-  const isContentValid = validateContent(newTodo.value.content);
-  const isPriorityValid = validatePriority(newTodo.value.priority);
-
-  return isTitleValid && isContentValid && isPriorityValid;
-};
-
-const getPriorityClasses = (priority: Priority): string => {
-  const classes = {
-    Haut: "bg-red-100 text-red-800",
-    Moyen: "bg-yellow-100 text-yellow-800",
-    Bas: "bg-green-100 text-green-800",
+const handleAddTodo = (newTodo: NewTodo): void => {
+  const todo: Todo = {
+    id: Date.now(),
+    title: newTodo.title.trim(),
+    content: newTodo.content.trim(),
+    priority: newTodo.priority,
+    completed: false,
+    createdAt: new Date(),
   };
-  return classes[priority];
+
+  todos.value.push(todo);
 };
 
-const addTodo = (): void => {
-  if (!validateForm()) {
-    return;
-  }
-
-  if (newTodo.value.title.trim()) {
-    const todo: Todo = {
-      id: Date.now(),
-      title: newTodo.value.title.trim(),
-      content: newTodo.value.content.trim(),
-      priority: newTodo.value.priority,
-      completed: false,
-      createdAt: new Date(),
-    };
-
-    todos.value.push(todo);
-    resetForm();
-  }
-};
-
-const resetForm = (): void => {
-  newTodo.value = {
-    title: "",
-    content: "",
-    priority: "Moyen",
-  };
-  titleError.value = "";
-  contentError.value = "";
-  priorityError.value = "";
-  showAddForm.value = false;
-};
-
-const toggleTodo = (id: number): void => {
+const handleToggleTodo = (id: number): void => {
   const todo = todos.value.find((t) => t.id === id);
   if (todo) {
     todo.completed = !todo.completed;
   }
 };
 
-const deleteTodo = (id: number): void => {
+const handleDeleteTodo = (id: number): void => {
   todos.value = todos.value.filter((t) => t.id !== id);
 };
 
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat("fr-FR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
-};
-
-const logout = async (): Promise<void> => {
-  try {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userData");
-    await router.push("/login");
-  } catch (error) {
-    console.error("Logout error:", error);
-  }
-};
-
-const loadUserData = (): void => {
-  try {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      user.value = JSON.parse(userData) as User;
-    }
-  } catch (error) {
-    console.error("Error loading user data:", error);
-  }
+const handleLogout = async (): Promise<void> => {
+  await logout();
 };
 
 onMounted(() => {
-  loadUserData();
+  initializeAuth();
+
+  if (!requireAuth()) {
+    return;
+  }
 });
 </script>
