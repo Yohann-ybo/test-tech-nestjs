@@ -113,36 +113,64 @@
         >
           <form class="space-y-4" @submit.prevent="addTodo">
             <div>
-              <label
-                for="title"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Titre de la tâche
-              </label>
+              <div class="flex justify-between items-center mb-1">
+                <label
+                  for="title"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Titre de la tâche
+                </label>
+                <span class="text-xs text-gray-500">
+                  {{ newTodo.title.length }}/50
+                </span>
+              </div>
               <input
                 id="title"
                 v-model="newTodo.title"
                 type="text"
+                maxlength="50"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :class="[
+                  'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
+                  titleError
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                ]"
                 placeholder="Entrez le titre de la tâche"
               />
+              <div v-if="titleError" class="mt-1 text-sm text-red-600">
+                {{ titleError }}
+              </div>
             </div>
 
             <div>
-              <label
-                for="content"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Description
-              </label>
+              <div class="flex justify-between items-center mb-1">
+                <label
+                  for="content"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Description
+                </label>
+                <span class="text-xs text-gray-500">
+                  {{ newTodo.content.length }}/256
+                </span>
+              </div>
               <textarea
                 id="content"
                 v-model="newTodo.content"
+                maxlength="256"
                 rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :class="[
+                  'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
+                  contentError
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                ]"
                 placeholder="Décrivez la tâche..."
               />
+              <div v-if="contentError" class="mt-1 text-sm text-red-600">
+                {{ contentError }}
+              </div>
             </div>
 
             <div>
@@ -155,12 +183,20 @@
               <select
                 id="priority"
                 v-model="newTodo.priority"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :class="[
+                  'w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition duration-150 ease-in-out',
+                  priorityError
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                ]"
               >
                 <option value="Bas">Bas</option>
                 <option value="Moyen">Moyen</option>
                 <option value="Haut">Haut</option>
               </select>
+              <div v-if="priorityError" class="mt-1 text-sm text-red-600">
+                {{ priorityError }}
+              </div>
             </div>
 
             <div class="flex justify-end space-x-3">
@@ -267,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 
 type Priority = "Bas" | "Moyen" | "Haut";
@@ -294,8 +330,8 @@ interface User {
 }
 
 const router = useRouter();
-const user = ref<User | null>(null);
 
+const user = ref<User | null>(null);
 const showAddForm = ref<boolean>(false);
 const todos = ref<Todo[]>([
   {
@@ -330,6 +366,12 @@ const newTodo = ref<NewTodo>({
   priority: "Moyen",
 });
 
+const titleError = ref<string>("");
+const contentError = ref<string>("");
+const priorityError = ref<string>("");
+
+const allowedPriorities: Priority[] = ["Bas", "Moyen", "Haut"];
+
 const sortedTodos = computed(() => {
   const priorityOrder = { Haut: 3, Moyen: 2, Bas: 1 };
   return [...todos.value].sort((a, b) => {
@@ -339,6 +381,73 @@ const sortedTodos = computed(() => {
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
 });
+
+watch(
+  () => newTodo.value.title,
+  (newTitle) => {
+    validateTitle(newTitle);
+  }
+);
+
+watch(
+  () => newTodo.value.content,
+  (newContent) => {
+    validateContent(newContent);
+  }
+);
+
+watch(
+  () => newTodo.value.priority,
+  (newPriority) => {
+    validatePriority(newPriority);
+  }
+);
+
+const validateTitle = (title: string): boolean => {
+  titleError.value = "";
+
+  if (!title.trim()) {
+    titleError.value = "Le titre est requis";
+    return false;
+  }
+
+  if (title.length > 50) {
+    titleError.value = "Le titre ne peut pas dépasser 50 caractères";
+    return false;
+  }
+
+  return true;
+};
+
+const validateContent = (content: string): boolean => {
+  contentError.value = "";
+
+  if (content.length > 256) {
+    contentError.value = "La description ne peut pas dépasser 256 caractères";
+    return false;
+  }
+
+  return true;
+};
+
+const validatePriority = (priority: Priority): boolean => {
+  priorityError.value = "";
+
+  if (!allowedPriorities.includes(priority)) {
+    priorityError.value = "La priorité doit être 'Bas', 'Moyen' ou 'Haut'";
+    return false;
+  }
+
+  return true;
+};
+
+const validateForm = (): boolean => {
+  const isTitleValid = validateTitle(newTodo.value.title);
+  const isContentValid = validateContent(newTodo.value.content);
+  const isPriorityValid = validatePriority(newTodo.value.priority);
+
+  return isTitleValid && isContentValid && isPriorityValid;
+};
 
 const getPriorityClasses = (priority: Priority): string => {
   const classes = {
@@ -350,6 +459,10 @@ const getPriorityClasses = (priority: Priority): string => {
 };
 
 const addTodo = (): void => {
+  if (!validateForm()) {
+    return;
+  }
+
   if (newTodo.value.title.trim()) {
     const todo: Todo = {
       id: Date.now(),
@@ -371,6 +484,9 @@ const resetForm = (): void => {
     content: "",
     priority: "Moyen",
   };
+  titleError.value = "";
+  contentError.value = "";
+  priorityError.value = "";
   showAddForm.value = false;
 };
 
