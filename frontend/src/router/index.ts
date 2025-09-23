@@ -24,6 +24,7 @@ const routes: Array<RouteRecordRaw & { meta?: RouteMeta }> = [
     component: LoginPage,
     meta: {
       title: "Connexion",
+      requiresGuest: true,
     },
   },
   {
@@ -74,6 +75,7 @@ router.beforeEach(
   ) => {
     const userIsAuthenticated = isAuthenticated();
     const requiresAuth = to.meta?.requiresAuth === true;
+    const requiresGuest = to.meta?.requiresGuest === true;
 
     if (to.meta?.title) {
       document.title = `${to.meta.title} - Mon App`;
@@ -88,6 +90,23 @@ router.beforeEach(
           redirect: to.fullPath,
         },
       });
+      return;
+    }
+
+    if (requiresGuest && userIsAuthenticated) {
+      console.info("Already authenticated, redirecting to home");
+      next({
+        name: "Home",
+      });
+      return;
+    }
+
+    if (to.path === "/") {
+      if (userIsAuthenticated) {
+        next({ name: "Home" });
+      } else {
+        next({ name: "Login" });
+      }
       return;
     }
 

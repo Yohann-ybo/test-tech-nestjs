@@ -18,7 +18,6 @@
         <p class="text-gray-600 mb-2">
           Désolé, la page que vous recherchez n'existe pas.
         </p>
-        <p class="text-sm text-gray-500">test</p>
       </div>
 
       <div class="space-y-4">

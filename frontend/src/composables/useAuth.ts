@@ -93,6 +93,7 @@ export function useAuth() {
     try {
       isLoading.value = true;
 
+      clearStorage();
       clearAuthState();
 
       await navigateToLogin();
