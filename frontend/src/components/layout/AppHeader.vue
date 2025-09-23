@@ -34,10 +34,7 @@
             </div>
           </div>
 
-          <button
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
-            @click="$emit('logout')"
-          >
+          <button :class="BUTTON_CLASSES.DANGER" @click="$emit('logout')">
             <BaseIcon name="logout" size="sm" class="mr-2" />
             Déconnexion
           </button>
@@ -51,7 +48,7 @@
 import { computed } from "vue";
 import BaseIcon from "@/components/common/BaseIcon.vue";
 import type { User } from "@/types/auth";
-import { useAuth } from "@/composables/useAuth";
+import { BUTTON_CLASSES } from "@/constants/styles";
 
 interface Props {
   user: User | null;
@@ -64,9 +61,15 @@ interface Emits {
 const props = defineProps<Props>();
 defineEmits<Emits>();
 
-const { getUserInitial, getWelcomeMessage } = useAuth();
+const getUserInitial = computed(() => {
+  return props.user?.name?.charAt(0).toUpperCase() || "U";
+});
 
 const displayUserName = computed(() => {
   return props.user?.name || "User";
+});
+
+const getWelcomeMessage = computed(() => {
+  return props.user?.name ? `Bienvenue, ${props.user.name} !` : "Bienvenue!";
 });
 </script>

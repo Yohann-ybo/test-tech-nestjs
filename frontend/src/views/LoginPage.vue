@@ -75,13 +75,11 @@ import {
   AuthValidator,
 } from "@/helpers/authValidation";
 import type { LoginForm, LoginFormErrors } from "@/types/auth";
-import { reactive, computed, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { reactive, computed, watch } from "vue";
 import BaseInput from "@/components/common/BaseInput.vue";
 import BaseIcon from "@/components/common/BaseIcon.vue";
 
-const router = useRouter();
-const { login, isLoading, error: authError, isAuthenticated } = useAuth();
+const { login, isLoading, error: authError } = useAuth();
 
 const { EMAIL_MAX_LENGTH, PASSWORD_MAX_LENGTH } = AUTH_VALIDATION_LIMITS;
 
@@ -134,10 +132,4 @@ const handleLogin = async (): Promise<void> => {
     console.error("Login failed:", error);
   }
 };
-
-onMounted(() => {
-  if (isAuthenticated.value) {
-    router.push("/home");
-  }
-});
 </script>

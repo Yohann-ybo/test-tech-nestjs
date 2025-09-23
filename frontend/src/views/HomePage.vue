@@ -14,13 +14,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import AppHeader from "../components/layout/AppHeader.vue";
 import TodoList from "../components/todo/TodoList.vue";
 import { useAuth } from "../composables/useAuth";
 import type { Todo, NewTodo } from "../types/todo";
 
-const { user, logout, requireAuth, initializeAuth } = useAuth();
+const { user, logout } = useAuth();
 
 const todos = ref<Todo[]>([
   {
@@ -76,12 +76,4 @@ const handleDeleteTodo = (id: number): void => {
 const handleLogout = async (): Promise<void> => {
   await logout();
 };
-
-onMounted(() => {
-  initializeAuth();
-
-  if (!requireAuth()) {
-    return;
-  }
-});
 </script>
