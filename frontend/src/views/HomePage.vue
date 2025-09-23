@@ -13,6 +13,99 @@
               {{ todos.length }} tâche(s) au total
             </p>
           </div>
+          <button
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+            @click="showAddForm = !showAddForm"
+          >
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            {{ showAddForm ? "Annuler" : "Nouvelle Tâche" }}
+          </button>
+        </div>
+
+        <div
+          v-if="showAddForm"
+          class="px-6 py-4 bg-gray-50 border-b border-gray-200"
+        >
+          <form class="space-y-4" @submit.prevent="addTodo">
+            <div>
+              <label
+                for="title"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Titre de la tâche
+              </label>
+              <input
+                id="title"
+                v-model="newTodo.title"
+                type="text"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Entrez le titre de la tâche"
+              />
+            </div>
+
+            <div>
+              <label
+                for="content"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="content"
+                v-model="newTodo.content"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Décrivez la tâche..."
+              />
+            </div>
+
+            <div>
+              <label
+                for="priority"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Niveau de priorité
+              </label>
+              <select
+                id="priority"
+                v-model="newTodo.priority"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="Bas">Bas</option>
+                <option value="Moyen">Moyen</option>
+                <option value="Haut">Haut</option>
+              </select>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+              <button
+                type="button"
+                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+                @click="resetForm"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+              >
+                Ajouter la tâche
+              </button>
+            </div>
+          </form>
         </div>
 
         <div class="divide-y divide-gray-200">
@@ -114,6 +207,13 @@ interface Todo {
   createdAt: Date;
 }
 
+interface NewTodo {
+  title: string;
+  content: string;
+  priority: Priority;
+}
+
+const showAddForm = ref<boolean>(false);
 const todos = ref<Todo[]>([
   {
     id: 1,
@@ -141,6 +241,12 @@ const todos = ref<Todo[]>([
   },
 ]);
 
+const newTodo = ref<NewTodo>({
+  title: "",
+  content: "",
+  priority: "Moyen",
+});
+
 const sortedTodos = computed(() => {
   const priorityOrder = { Haut: 3, Moyen: 2, Bas: 1 };
   return [...todos.value].sort((a, b) => {
@@ -158,6 +264,31 @@ const getPriorityClasses = (priority: Priority): string => {
     Bas: "bg-green-100 text-green-800",
   };
   return classes[priority];
+};
+
+const addTodo = (): void => {
+  if (newTodo.value.title.trim()) {
+    const todo: Todo = {
+      id: Date.now(),
+      title: newTodo.value.title.trim(),
+      content: newTodo.value.content.trim(),
+      priority: newTodo.value.priority,
+      completed: false,
+      createdAt: new Date(),
+    };
+
+    todos.value.push(todo);
+    resetForm();
+  }
+};
+
+const resetForm = (): void => {
+  newTodo.value = {
+    title: "",
+    content: "",
+    priority: "Moyen",
+  };
+  showAddForm.value = false;
 };
 
 const toggleTodo = (id: number): void => {
