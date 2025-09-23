@@ -1,3 +1,9 @@
 <template>
-  <div class="font-bold bg-blue text-red-300 py-2 px-4">Good luck !</div>
+  <div id="app" class="font-sans antialiased">
+    <HomePage />
+  </div>
 </template>
+
+<script setup lang="ts">
+import HomePage from "./views/HomePage.vue";
+</script>
