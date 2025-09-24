@@ -21,8 +21,6 @@ export class User {
 export class LoginPayload {
   email!: string;
   password!: string;
-  name!: string;
-  id!: number;
 }
 
 export class LoginResponse {
