@@ -1,7 +1,6 @@
 <template>
   <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
     <form class="space-y-4" @submit.prevent="handleSubmit">
-      <!-- Title Field -->
       <BaseInput
         id="todo-title"
         v-model="form.title"
@@ -13,7 +12,6 @@
         required
       />
 
-      <!-- Content Field -->
       <BaseInput
         id="todo-content"
         v-model="form.content"
@@ -26,7 +24,6 @@
         :rows="3"
       />
 
-      <!-- Priority Field -->
       <BaseSelect
         id="todo-priority"
         v-model="form.priority"
@@ -35,7 +32,6 @@
         :error="errors.priority"
       />
 
-      <!-- Form Actions -->
       <div class="flex justify-end space-x-3">
         <button
           type="button"
@@ -78,7 +74,8 @@ const emit = defineEmits<Emits>();
 const form = reactive<NewTodo>({
   title: "",
   content: "",
-  priority: "Moyen",
+  priority: "MEDIUM",
+  executionDate: null, // New todos are not completed
 });
 
 const errors = reactive<TodoFormErrors>({
@@ -136,7 +133,8 @@ const handleSubmit = () => {
 const resetForm = () => {
   form.title = "";
   form.content = "";
-  form.priority = "Moyen";
+  form.priority = "MEDIUM";
+  form.executionDate = null;
   errors.title = "";
   errors.content = "";
   errors.priority = "";

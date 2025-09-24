@@ -1,3 +1,3 @@
 export * as authService from "./authService";
-export { ApiError } from "./apiClient";
-export type { ApiError as ApiErrorType } from "./apiClient";
+export * as todoService from "./todoService";
+export { ApiError, apiRequest, authenticatedRequest } from "./apiClient";

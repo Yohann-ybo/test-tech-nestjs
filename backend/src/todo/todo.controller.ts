@@ -17,7 +17,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { TodoService } from "./todo.service";
-import { CreateTodoDto } from "./dto";
+import { CreateTodoDto, UpdateTodoDto } from "./dto";
 
 @Controller("todos")
 @UseGuards(AuthGuard("jwt"))
@@ -34,8 +34,12 @@ export class TodoController {
     return this.todoService.createTodo(req.user.userId, createTodoDto);
   }
 
-  @Patch(":id/toggle")
-  async toggleTodo(@Param("id", ParseIntPipe) id: number, @Req() req: any) {
+  @Patch(":id")
+  async updateTodo(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateTodoDto: UpdateTodoDto,
+    @Req() req: any
+  ) {
     const todo = await this.todoService.getTodoById(id);
     if (!todo) {
       throw new NotFoundException(`Todo with ID ${id} not found`);
@@ -44,7 +48,7 @@ export class TodoController {
       throw new ForbiddenException("You do not have access to this todo");
     }
 
-    return this.todoService.toggleTodo(todo);
+    return this.todoService.updateTodo(id, updateTodoDto);
   }
 
   @Delete(":id")

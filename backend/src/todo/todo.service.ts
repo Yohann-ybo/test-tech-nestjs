@@ -1,7 +1,7 @@
 import { Injectable, ConflictException } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { Todo, Prisma } from "@prisma/client";
-import { CreateTodoDto } from "./dto";
+import { CreateTodoDto, UpdateTodoDto } from "./dto";
 
 @Injectable()
 export class TodoService {
@@ -52,18 +52,16 @@ export class TodoService {
     });
   }
 
-  async deleteTodo(id: number): Promise<void> {
-    await this.prisma.todo.delete({
+  async updateTodo(id: number, updateTodoDto: UpdateTodoDto): Promise<Todo> {
+    return this.prisma.todo.update({
       where: { id },
+      data: updateTodoDto,
     });
   }
 
-  async toggleTodo(todo: Todo): Promise<Todo> {
-    return this.prisma.todo.update({
-      where: { id: todo.id },
-      data: {
-        executionDate: todo.executionDate ? null : new Date(),
-      },
+  async deleteTodo(id: number): Promise<void> {
+    await this.prisma.todo.delete({
+      where: { id },
     });
   }
 }

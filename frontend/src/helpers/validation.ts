@@ -1,6 +1,6 @@
 import type { Priority, NewTodo, TodoFormErrors } from "@/types/todo";
 
-export const ALLOWED_PRIORITIES: Priority[] = ["Bas", "Moyen", "Haut"];
+export const ALLOWED_PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH"];
 
 export const VALIDATION_LIMITS = {
   TITLE_MAX_LENGTH: 50,

@@ -8,9 +8,9 @@ import {
 } from "class-validator";
 
 export enum Priority {
-  BAS = "BAS",
-  MOYEN = "MOYEN",
-  HAUT = "HAUT",
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
 }
 
 export class CreateTodoDto {
@@ -29,4 +29,10 @@ export class CreateTodoDto {
   @IsOptional()
   @IsDateString()
   executionDate?: Date;
+}
+
+export class UpdateTodoDto {
+  @IsOptional()
+  @IsDateString()
+  executionDate?: Date | null;
 }
