@@ -40,7 +40,7 @@ async function main() {
     data: {
       title: "Todo2",
       priority: "MEDIUM",
-      executionDate: new Date("2021-10-02"),
+      executionDate: null,
       content: "lorem ipsum dolor sit amet",
       authorId: user1.id,
     },
@@ -59,7 +59,7 @@ async function main() {
     data: {
       title: "Todo5",
       priority: "MEDIUM",
-      executionDate: new Date("2022-10-02"),
+      executionDate: null,
       content: "lorem ipsum dolor sit amet",
       authorId: user2.id,
     },

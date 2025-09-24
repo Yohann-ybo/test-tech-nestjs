@@ -30,6 +30,6 @@ export class AuthService {
   }
 
   login(user: User): LoginResponse {
-    return new LoginResponse(this.jwtService.sign(user.toJson()), user);
+    return new LoginResponse(this.jwtService.sign(user.toJSON()), user);
   }
 }

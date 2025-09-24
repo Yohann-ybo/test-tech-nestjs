@@ -9,7 +9,7 @@ export class User {
     this.id = id;
   }
 
-  toJson() {
+  toJSON() {
     return {
       email: this.email,
       name: this.name,

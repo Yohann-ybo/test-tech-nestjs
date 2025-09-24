@@ -115,7 +115,7 @@ const handleToggleTodo = async (id: number): Promise<void> => {
     }
 
     successMessage.value =
-      todo.executionDate !== null
+      updatedTodo.executionDate !== null
         ? "Tâche marquée comme complétée"
         : "Tâche marquée comme non complétée";
   } catch (error) {
