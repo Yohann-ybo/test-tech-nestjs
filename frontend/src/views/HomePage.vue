@@ -18,7 +18,7 @@
       <SuccessNotification
         v-if="successMessage"
         :message="successMessage"
-        :duration="2000"
+        :duration="3000"
         @close="successMessage = ''"
       />
 
